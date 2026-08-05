@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="980" viewBox="0 0 1900 980" role="img" aria-labelledby="title desc">
+  <title id="title">Q-Forge 状态编码器与 Q 集成模型</title>
+  <desc id="desc">详细展示主实验固定投影、可选 RL-token Transformer、本体感知编码、重复动作注入 Q 头以及分阶段训练流程。</desc>
+  <defs>
+    <style>
+      .font { font-family: "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", Inter, Arial, sans-serif; }
+      .title { font-size: 40px; font-weight: 750; fill: #172033; }
+      .subtitle { font-size: 19px; fill: #5f6b7d; }
+      .section { font-size: 18px; font-weight: 750; letter-spacing: 1.4px; }
+      .card-title { font-size: 23px; font-weight: 750; fill: #172033; }
+      .body { font-size: 17px; fill: #445066; }
+      .small { font-size: 14px; fill: #667085; }
+      .metric { font-size: 20px; font-weight: 750; }
+      .arrow { fill: none; stroke: #758399; stroke-width: 3; marker-end: url(#arrow); }
+      .blue-arrow { fill: none; stroke: #4169b2; stroke-width: 3; marker-end: url(#blueArrow); }
+    </style>
+    <filter id="shadow" x="-15%" y="-20%" width="130%" height="150%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#14213d" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto">
+      <path d="M0,0 L11,5.5 L0,11 z" fill="#758399"/>
+    </marker>
+    <marker id="blueArrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto">
+      <path d="M0,0 L11,5.5 L0,11 z" fill="#4169b2"/>
+    </marker>
+  </defs>
+
+  <rect width="1900" height="980" fill="#f7f9fc"/>
+  <rect x="35" y="30" width="1830" height="920" rx="24" fill="#ffffff" stroke="#dce2eb" stroke-width="2"/>
+
+  <g class="font">
+    <text x="80" y="90" class="title">Q-Forge 状态表征与动作敏感 Q 集成模型</text>
+    <text x="80" y="126" class="subtitle">主结果采用冻结的 512 维随机投影；仓库另提供独立训练的 2048 维 RL-token Transformer 作为可选表征路径。</text>
+
+    <g filter="url(#shadow)">
+      <rect x="80" y="180" width="285" height="300" rx="18" fill="#ffffff" stroke="#b9c8e5" stroke-width="2"/>
+      <rect x="80" y="180" width="285" height="8" rx="4" fill="#5577bd"/>
+      <text x="110" y="228" class="card-title">冻结 VLA 前缀</text>
+      <text x="110" y="270" class="body">图像 + 语言 + 状态</text>
+      <rect x="110" y="300" width="225" height="60" rx="11" fill="#eef3fc"/>
+      <text x="222" y="327" text-anchor="middle" class="metric" fill="#315aa9">H ∈ R^(177×960)</text>
+      <text x="222" y="348" text-anchor="middle" class="small">有效词元掩码 m</text>
+      <text x="110" y="397" class="body">SmolVLA 始终冻结</text>
+      <text x="110" y="429" class="body">前缀词元以 BF16 缓存</text>
+      <text x="110" y="459" class="small">与动作专家使用相同的多模态上下文</text>
+    </g>
+
+    <g filter="url(#shadow)">
+      <rect x="435" y="165" width="355" height="190" rx="18" fill="#f4f7fd" stroke="#7d9bd2" stroke-width="3"/>
+      <rect x="435" y="165" width="355" height="8" rx="4" fill="#4169b2"/>
+      <text x="465" y="210" class="card-title" fill="#315aa9">主实验：固定投影</text>
+      <text x="465" y="249" class="body">词元层归一化 → 掩码均值</text>
+      <text x="465" y="280" class="body">固定高斯矩阵 P：960 × 512</text>
+      <rect x="465" y="301" width="295" height="35" rx="9" fill="#dfe9fa"/>
+      <text x="612" y="325" text-anchor="middle" class="metric" fill="#315aa9">z_proj ∈ R^512</text>
+    </g>
+
+    <g filter="url(#shadow)">
+      <rect x="435" y="385" width="355" height="260" rx="18" fill="#f7f5fb" stroke="#a896c9" stroke-width="2"/>
+      <rect x="435" y="385" width="355" height="8" rx="4" fill="#7867a8"/>
+      <text x="465" y="430" class="card-title">可选：RL-token Transformer</text>
+      <text x="465" y="468" class="body">1 个可学习 RL token</text>
+      <text x="465" y="499" class="body">2 层编码器—解码器；8 个头</text>
+      <text x="465" y="530" class="body">MLP 比例 4；掩码重建</text>
+      <rect x="465" y="551" width="295" height="42" rx="9" fill="#ebe6f4"/>
+      <text x="612" y="578" text-anchor="middle" class="metric" fill="#665391">z_rlt ∈ R^2048</text>
+      <text x="465" y="624" class="small">预训练 5,000 步；本仓库随后将其冻结</text>
+    </g>
+
+    <path d="M365 290 C400 290 400 260 420 260" class="blue-arrow"/>
+    <path d="M365 330 C400 330 400 510 420 510" class="arrow"/>
+
+    <g filter="url(#shadow)">
+      <rect x="865" y="180" width="350" height="465" rx="18" fill="#ffffff" stroke="#c9c1df" stroke-width="2"/>
+      <rect x="865" y="180" width="350" height="8" rx="4" fill="#7867a8"/>
+      <text x="895" y="228" class="card-title">状态与动作输入</text>
+      <text x="895" y="274" class="body">本体感知 p ∈ R^8</text>
+      <rect x="895" y="295" width="290" height="64" rx="11" fill="#f1eef7"/>
+      <text x="1040" y="321" text-anchor="middle" class="body">线性层 8 → 256</text>
+      <text x="1040" y="346" text-anchor="middle" class="small">LayerNorm + SiLU</text>
+      <text x="895" y="397" class="body">拼接 z 与本体感知特征</text>
+      <rect x="895" y="418" width="290" height="72" rx="11" fill="#f1eef7"/>
+      <text x="1040" y="446" text-anchor="middle" class="metric" fill="#665391">联合 LayerNorm 状态</text>
+      <text x="1040" y="473" text-anchor="middle" class="small">主路径 768 维 / RLT 2,304 维</text>
+      <text x="895" y="531" class="body">掩码动作块 A ∈ R^(5×7)</text>
+      <rect x="895" y="552" width="290" height="64" rx="11" fill="#fff6e9"/>
+      <text x="1040" y="579" text-anchor="middle" class="metric" fill="#a66312">展平动作 a ∈ R^35</text>
+      <text x="1040" y="603" text-anchor="middle" class="small">填充步骤先清零再展平</text>
+    </g>
+
+    <path d="M790 260 H850" class="blue-arrow"/>
+    <path d="M790 572 H850" class="arrow"/>
+
+    <g filter="url(#shadow)">
+      <rect x="1290" y="180" width="500" height="465" rx="18" fill="#ffffff" stroke="#e5bd82" stroke-width="2"/>
+      <rect x="1290" y="180" width="500" height="8" rx="4" fill="#c98224"/>
+      <text x="1320" y="228" class="card-title">重复动作注入 Q 头 × 5</text>
+      <rect x="1320" y="268" width="440" height="72" rx="12" fill="#fff7eb"/>
+      <text x="1540" y="297" text-anchor="middle" class="metric" fill="#a66312">[状态；动作] → 1024</text>
+      <text x="1540" y="323" text-anchor="middle" class="small">Linear + LayerNorm + SiLU</text>
+      <path d="M1540 340 V372" class="arrow"/>
+      <rect x="1320" y="372" width="440" height="72" rx="12" fill="#fff7eb"/>
+      <text x="1540" y="401" text-anchor="middle" class="metric" fill="#a66312">[隐藏层 1；动作] → 512</text>
+      <text x="1540" y="427" text-anchor="middle" class="small">Linear + LayerNorm + SiLU</text>
+      <path d="M1540 444 V476" class="arrow"/>
+      <rect x="1320" y="476" width="440" height="62" rx="12" fill="#fff1dd"/>
+      <text x="1540" y="514" text-anchor="middle" class="metric" fill="#a66312">[隐藏层 2；动作] → 标量 Q_i</text>
+      <text x="1320" y="576" class="body">集成均值：Q 引导与 TD 自举</text>
+      <text x="1320" y="608" class="body">集成标准差：分歧诊断</text>
+      <text x="1320" y="634" class="small">主路径线性层输入宽度：803 → 1059 → 547</text>
+    </g>
+    <path d="M1215 412 H1275" class="arrow"/>
+
+    <rect x="80" y="700" width="1710" height="38" rx="9" fill="#edf3ff"/>
+    <text x="100" y="725" class="section" fill="#315aa9">训练顺序与参数边界</text>
+
+    <g filter="url(#shadow)">
+      <rect x="80" y="770" width="470" height="125" rx="16" fill="#f7f5fb" stroke="#b9acd2" stroke-width="2"/>
+      <text x="110" y="809" class="card-title">0. 可选 RLT 预训练</text>
+      <text x="110" y="841" class="body">掩码前缀重建 MSE</text>
+      <text x="110" y="872" class="small">5,000 步；batch 4；LR 2.5e-5；裁剪 1.0</text>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="610" y="770" width="520" height="125" rx="16" fill="#f3f6fc" stroke="#a9bde2" stroke-width="2"/>
+      <text x="640" y="809" class="card-title">1. 蒙特卡洛 Q 初始化</text>
+      <text x="640" y="841" class="body">5 个 Q 头回归经验 MC 回报</text>
+      <text x="640" y="872" class="small">5,000 步；batch 256；LR 3e-4；权重衰减 1e-4</text>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="1190" y="770" width="600" height="125" rx="16" fill="#fff7eb" stroke="#e4bd86" stroke-width="2"/>
+      <text x="1220" y="809" class="card-title">2. H 步 TD + Cal-QL 精炼</text>
+      <text x="1220" y="841" class="body">数据集下一动作；目标 EMA；随机与局部 OOD 动作</text>
+      <text x="1220" y="872" class="small">2,000 步；LR 1e-4；τ=.005；α=.05；MC 校准下界</text>
+    </g>
+    <path d="M550 833 H595" class="arrow"/>
+    <path d="M1130 833 H1175" class="arrow"/>
+
+    <text x="80" y="930" class="small">本文主结果路径：固定 512 维投影 + 256 维本体感知特征 → 768 维状态。Q 训练期间 SmolVLA 与所选特征提取器均保持冻结。</text>
+  </g>
+</svg>

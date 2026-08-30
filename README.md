@@ -12,6 +12,12 @@ The complete pipeline—SmolVLA fine-tuning, LIBERO rollout collection, critic
 training, Q-guided evaluation, residual distillation, and attention
 benchmarking—was run on one AMD Radeon `gfx1100` GPU with 48 GiB VRAM.
 
+## Award
+
+Q-Forge won the **Excellent Award** at **AMD AI DevMaster 2026**.
+
+![AMD AI DevMaster 2026 Excellent Award](https://github.com/user-attachments/assets/96ecb33c-2a74-460a-aa5a-5581dec78a75)
+
 ![Q-Forge pipeline](assets/architecture.svg)
 
 ## Demo video
